@@ -1,0 +1,17 @@
+{
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "instagram-private-api": "^1.45.3",
+    "moment": "^2.29.3",
+    "readline-sync": "^1.4.10"
+  },
+  "name": "masslooking",
+  "version": "1.0.0",
+  "description": "rian ganteng",
+  "main": "story.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "rian ganteng",
+  "license": "ISC"
+}
