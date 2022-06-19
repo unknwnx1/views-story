@@ -2,16 +2,26 @@
 var _require = require("instagram-private-api");
 var IgApiClient = _require.IgApiClient;
 var fs = require("fs");
+var child = require("child_process");
 var moment = require("moment");
 var chalk = require("chalk");
 var read = require("readline-sync");
 var waktu = read.question(chalk.blueBright("[ " + moment().format("HH:mm:ss") + " ] delay per views (second) : "));
+
+async function updater() {
+    const pullReq = child.spawnSync("git", ['pull'], {
+        encoding: "utf-8"
+    })
+    console.log(pullReq.stdout);
+}
+
 async function sleep() {
         return new Promise(function (a) {
             setTimeout(a, 1000 * waktu);
         });
     }
     (async function () {
+        await updater()
         var username = read.question(chalk.blueBright("[ " + moment().format("HH:mm:ss") + " ] username (ex:ryn.andri) : "));
         if (!fs.existsSync("./datas/" + username + ".json")) {
             var pwh = read.question(chalk.green("[ " + moment().format("HH:mm:ss") + " ] password : "));
