@@ -1,1 +1,78 @@
-const{IgApiClient}=require("instagram-private-api"),fs=require("fs"),moment=require("moment"),chalk=require("chalk"),read=require("readline-sync"),waktu=read.question(chalk.blueBright(`[ ${moment().format("HH:mm:ss")} ] delay per views (second) : `));async function sleep(){return new Promise(a=>{setTimeout(a,1e3*waktu)})}(async()=>{let a=read.question(chalk.blueBright(`[ ${moment().format("HH:mm:ss")} ] username (ex:ryn.andri) : `));if(!fs.existsSync(`./datas/${a}.json`)){const b=read.question(chalk.green(`[ ${moment().format("HH:mm:ss")} ] password : `));try{const c=new IgApiClient;c.state.generateDevice(a),c.simulate.preLoginFlow();const d=await c.account.login(a,b);if(d.username==a){console.log(chalk.yellowBright(`[ ${moment().format("HH:mm:ss")} ] login success ${d.full_name} `));const b=await c.state.serialize();delete b.constants;const e=JSON.stringify(b);fs.writeFileSync(`./datas/${a}.json`,e),console.log(chalk.yellowBright(`[ ${moment().format("HH:mm:ss")} ] ${d.full_name} Success saving state`))}else console.log(chalk.red(`[ ${moment().format("HH:mm:ss")} ] login failed! `)),process.exit()}catch(a){console.log(a.message)}}try{const b=fs.readFileSync(`./datas/${a}.json`,"utf-8"),c=new IgApiClient;c.state.generateDevice(a),c.simulate.preLoginFlow();for(await c.state.deserialize(b);;){let b=1;console.log(chalk.blue(`[ ${moment().format("HH:mm:ss")} ] Memulai MassLooking to timeline`));const d=await c.feed.reelsTray(),e=await d.items();if(0==e.length){console.log(`Story not found`);continue}for(let d=0;d<e.length;d++){const f=e[d],g=await c.feed.reelsMedia({userIds:[f.id]}),h=await g.items();for(let d=0;d<h.length;d++){const e=h[d],g=await c.story.seen([e]);"ok"==g.status?(console.log(chalk.green(`[ ${moment().format("HH:mm:ss")} ] ${a} Success views story target ${f.user.username}`)),await sleep()):console.log(chalk.red(`[ ${moment().format("HH:mm:ss")} ] ${a} Failed views story`)),console.log(chalk.white(`[ ${moment().format("HH:mm:ss")} ] total seen story : ${b++}`))}}console.log(chalk.whiteBright(`[ ${moment().format("HH:mm:ss")} ] Looping : ${b++}`))}}catch(a){console.log(a.message)}})();
+'use strict';
+var _require = require("instagram-private-api");
+var IgApiClient = _require.IgApiClient;
+var fs = require("fs");
+var moment = require("moment");
+var chalk = require("chalk");
+var read = require("readline-sync");
+var waktu = read.question(chalk.blueBright("[ " + moment().format("HH:mm:ss") + " ] delay per views (second) : "));
+async function sleep() {
+        return new Promise(function (a) {
+            setTimeout(a, 1000 * waktu);
+        });
+    }
+    (async function () {
+        var username = read.question(chalk.blueBright("[ " + moment().format("HH:mm:ss") + " ] username (ex:ryn.andri) : "));
+        if (!fs.existsSync("./datas/" + username + ".json")) {
+            var pwh = read.question(chalk.green("[ " + moment().format("HH:mm:ss") + " ] password : "));
+            try {
+                var tokobj = new IgApiClient;
+                tokobj.state.generateDevice(username);
+                tokobj.simulate.preLoginFlow();
+                var $scope = await tokobj.account.login(username, pwh);
+                if ($scope.username == username) {
+                    console.log(chalk.yellowBright("[ " + moment().format("HH:mm:ss") + " ] login success " + $scope.full_name + " "));
+                    var savedScripts = await tokobj.state.serialize();
+                    delete savedScripts.constants;
+                    var envContent = JSON.stringify(savedScripts);
+                    fs.writeFileSync("./datas/" + username + ".json", envContent);
+                    console.log(chalk.yellowBright("[ " + moment().format("HH:mm:ss") + " ] " + $scope.full_name + " Success saving state"));
+                } else {
+                    console.log(chalk.red("[ " + moment().format("HH:mm:ss") + " ] login failed! "));
+                    process.exit();
+                }
+            } catch (a) {
+                console.log(a.message);
+            }
+        }
+        try {
+            var keystoreStr = fs.readFileSync("./datas/" + username + ".json", "utf-8");
+            var $scope = new IgApiClient;
+            $scope.state.generateDevice(username);
+            // $scope.simulate.preLoginFlow();
+            await $scope.state.deserialize(keystoreStr);
+            for (;;) {
+                var _b3 = 1;
+                console.log(chalk.blue("[ " + moment().format("HH:mm:ss") + " ] Memulai MassLooking to timeline"));
+                var linkLevelDetails = await $scope.feed.reelsTray();
+                var crossfilterable_layers = await linkLevelDetails.items();
+                if (0 == crossfilterable_layers.length) {
+                    console.log("Story not found");
+                    continue;
+                }
+                var layer_i = 0;
+                for (; layer_i < crossfilterable_layers.length; layer_i++) {
+                    var layer = crossfilterable_layers[layer_i];
+                    var linkLevelDetails = await $scope.feed.reelsMedia({
+                        userIds: [layer.id]
+                    });
+                    var visible_indexes = await linkLevelDetails.items();
+                    var i = 0;
+                    for (; i < visible_indexes.length; i++) {
+                        var beforeTab = visible_indexes[i];
+                        var data = await $scope.story.seen([beforeTab]);
+                        if ("ok" == data.status) {
+                            console.log(chalk.green("[ " + moment().format("HH:mm:ss") + " ] " + username + " Success views story target " + layer.user.username));
+                            await sleep();
+                        } else {
+                            console.log(chalk.red("[ " + moment().format("HH:mm:ss") + " ] " + username + " Failed views story"));
+                        }
+                        console.log(chalk.white("[ " + moment().format("HH:mm:ss") + " ] total seen story : " + _b3++));
+                    }
+                }
+                console.log(chalk.whiteBright("[ " + moment().format("HH:mm:ss") + " ] Looping : " + _b3++));
+            }
+        } catch (a) {
+            console.log(a.message);
+        }
+    })();
