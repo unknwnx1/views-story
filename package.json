@@ -1,9 +1,11 @@
 {
   "dependencies": {
     "chalk": "^4.1.2",
+    "delay": "^4.4.1",
+    "delay-random": "^1.0.1",
+    "dotenv": "^16.0.1",
     "instagram-private-api": "^1.45.3",
-    "moment": "^2.29.3",
-    "readline-sync": "^1.4.10"
+    "moment": "^2.29.3"
   },
   "name": "masslooking",
   "version": "1.0.0",

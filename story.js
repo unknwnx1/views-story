@@ -5,8 +5,11 @@ var fs = require("fs");
 var child = require("child_process");
 var moment = require("moment");
 var chalk = require("chalk");
-var read = require("readline-sync");
-var waktu = read.question(chalk.blueBright("[ " + moment().format("HH:mm:ss") + " ] delay per views (second) : "));
+var delay = require("delay");
+var delayRandom = require("delay-random");
+require('dotenv').config();
+
+
 
 async function updater() {
     const pullReq = child.spawnSync("git", ['pull'], {
@@ -15,36 +18,39 @@ async function updater() {
     console.log(pullReq.stdout);
 }
 
-async function sleep() {
-        return new Promise(function (a) {
-            setTimeout(a, 1000 * waktu);
-        });
-    }
-    (async function () {
-        await updater()
-        var username = read.question(chalk.blueBright("[ " + moment().format("HH:mm:ss") + " ] username (ex:ryn.andri) : "));
-        if (!fs.existsSync("./datas/" + username + ".json")) {
-            var pwh = read.question(chalk.green("[ " + moment().format("HH:mm:ss") + " ] password : "));
-            try {
-                var tokobj = new IgApiClient;
-                tokobj.state.generateDevice(username);
-                tokobj.simulate.preLoginFlow();
-                var $scope = await tokobj.account.login(username, pwh);
-                if ($scope.username == username) {
-                    console.log(chalk.yellowBright("[ " + moment().format("HH:mm:ss") + " ] login success " + $scope.full_name + " "));
-                    var savedScripts = await tokobj.state.serialize();
-                    delete savedScripts.constants;
-                    var envContent = JSON.stringify(savedScripts);
-                    fs.writeFileSync("./datas/" + username + ".json", envContent);
-                    console.log(chalk.yellowBright("[ " + moment().format("HH:mm:ss") + " ] " + $scope.full_name + " Success saving state"));
-                } else {
-                    console.log(chalk.red("[ " + moment().format("HH:mm:ss") + " ] login failed! "));
-                    process.exit();
-                }
-            } catch (a) {
-                console.log(a.message);
+
+(async function () {
+    await updater()
+
+    var username = process.env.USERNAME_IG
+    var pwh = process.env.PASSWORD_IG
+    var first = parseInt(process.env.BEFORE_DELAY)
+    var second = parseInt(process.env.AFTER_DELAY)
+    const random = await delayRandom(first, second)
+    if (!fs.existsSync("./datas/" + username + ".json")) {
+        try {
+            var tokobj = new IgApiClient;
+            tokobj.state.generateDevice(username);
+            tokobj.simulate.preLoginFlow();
+            var $scope = await tokobj.account.login(username, pwh);
+            if ($scope.username == username) {
+                console.log(chalk.yellowBright("[ " + moment().format("HH:mm:ss") + " ] login success " + $scope.full_name + " "));
+                var savedScripts = await tokobj.state.serialize();
+                delete savedScripts.constants;
+                var envContent = JSON.stringify(savedScripts);
+                fs.writeFileSync("./datas/" + username + ".json", envContent);
+                console.log(chalk.yellowBright("[ " + moment().format("HH:mm:ss") + " ] " + $scope.full_name + " Success saving state"));
+            } else {
+                console.log(chalk.red("[ " + moment().format("HH:mm:ss") + " ] login failed! "));
+                process.exit();
             }
+        } catch (a) {
+            console.log(a.message);
         }
+    }
+    while (true) {
+
+        //}
         try {
             var keystoreStr = fs.readFileSync("./datas/" + username + ".json", "utf-8");
             var $scope = new IgApiClient;
@@ -73,7 +79,7 @@ async function sleep() {
                         var data = await $scope.story.seen([beforeTab]);
                         if ("ok" == data.status) {
                             console.log(chalk.green("[ " + moment().format("HH:mm:ss") + " ] " + username + " Success views story target " + layer.user.username));
-                            await sleep();
+                            await delay(random);
                         } else {
                             console.log(chalk.red("[ " + moment().format("HH:mm:ss") + " ] " + username + " Failed views story"));
                         }
@@ -84,5 +90,8 @@ async function sleep() {
             }
         } catch (a) {
             console.log(a.message);
+            console.log(a);
+            continue;
         }
-    })();
+    }
+})();
